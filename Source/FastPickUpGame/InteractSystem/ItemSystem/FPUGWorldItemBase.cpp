@@ -1,12 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FPUGWorldPickUpItem.h"
-
-#include "FastPickUpGame/CharacterSystem/FPUGPickUpInterface.h"
+#include "FPUGWorldItemBase.h"
 
 // Sets default values
-AFPUGWorldPickUpItem::AFPUGWorldPickUpItem()
+AFPUGWorldItemBase::AFPUGWorldItemBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -19,23 +17,18 @@ AFPUGWorldPickUpItem::AFPUGWorldPickUpItem()
 }
 
 // Called when the game starts or when spawned
-void AFPUGWorldPickUpItem::BeginPlay()
+void AFPUGWorldItemBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-void AFPUGWorldPickUpItem::Interact(AActor* Executor)
+void AFPUGWorldItemBase::Interact(AActor* Executor)
 {
-	IFPUGPickUpInterface* PickUpIterface = Cast<IFPUGPickUpInterface>(Executor);
-
-	if (PickUpIterface)
-	{
-		PickUpIterface->PickUp(this);
-	}
+	Destroy();
 }
 
-bool AFPUGWorldPickUpItem::CanInteract(AActor* Executor)
+bool AFPUGWorldItemBase::CanInteract(AActor* Executor)
 {
 	return false;
 }

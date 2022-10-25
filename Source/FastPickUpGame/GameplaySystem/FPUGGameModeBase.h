@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "FPUGGameModeBase.generated.h"
 
+class AFPUGGameStateBase;
+
 /**
  * 
  */
@@ -14,4 +16,18 @@ class FASTPICKUPGAME_API AFPUGGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+
+	void AddScoreToTeamById(int32 TeamId, int32 ScoreToAdd);
+
+protected:
+
+	void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+
+	AFPUGGameStateBase* GetGameStateInternal();
+
+private:
+
+	AFPUGGameStateBase* GS;
+
 };

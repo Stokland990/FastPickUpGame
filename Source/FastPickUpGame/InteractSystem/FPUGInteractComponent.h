@@ -38,6 +38,11 @@ private:
 
 	FHitResult TraceForInteract();
 
+protected: 
+
+	UPROPERTY(EditDefaultsOnly, Category = "InteractInfo")
+	float InteractDistance = 500.f;
+
 private:
 
 	USceneComponent* ExecutorTraceComponent;

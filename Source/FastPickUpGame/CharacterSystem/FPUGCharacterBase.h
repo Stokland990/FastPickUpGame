@@ -39,7 +39,7 @@ public:
 
 	//Override Interface functions
 
-	void PickUp(AActor* ItemToPickUp) override;
+	void PickUpScoreItem(const int32 ScoreToAdd) override;
 
 	USceneComponent* GetComponentForInteractTrace() const override;
 

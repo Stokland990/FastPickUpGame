@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "FPUGCharacterBase.h"
+
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -8,8 +9,10 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
+#include "GameFramework/PlayerState.h"
 
 #include "FastPickUpGame/InteractSystem/FPUGInteractComponent.h"
+#include <FastPickUpGame/GameplaySystem/FPUGGameModeBase.h>
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -144,9 +147,18 @@ void AFPUGCharacterBase::MoveRight(float Value)
 	}
 }
 
-void AFPUGCharacterBase::PickUp(AActor* ItemToPickUp)
+void AFPUGCharacterBase::PickUpScoreItem(const int32 ScoreToAdd)
 {
-	ItemToPickUp->Destroy();
+	auto GM = GetWorld()->GetAuthGameMode<AFPUGGameModeBase>();
+
+	
+
+	if (GM)
+	{
+		const int32 TeamId = GetPlayerState()->PlayerId;
+
+		GM->AddScoreToTeamById(TeamId, ScoreToAdd);
+	}
 }
 
 USceneComponent* AFPUGCharacterBase::GetComponentForInteractTrace() const

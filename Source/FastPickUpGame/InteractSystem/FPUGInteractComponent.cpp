@@ -87,7 +87,7 @@ FHitResult UFPUGInteractComponent::TraceForInteract()
 	if (TraceComp)
 	{
 		FVector TraceStart = TraceComp->GetComponentLocation();
-		FVector TraceEnd = TraceComp->GetForwardVector() * 500.f + TraceStart;
+		FVector TraceEnd = TraceComp->GetForwardVector() * InteractDistance + TraceStart;
 
 		FCollisionObjectQueryParams Params;
 		Params.AddObjectTypesToQuery(ECC_WorldDynamic);

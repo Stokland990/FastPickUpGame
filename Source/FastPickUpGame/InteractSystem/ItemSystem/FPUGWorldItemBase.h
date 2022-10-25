@@ -7,16 +7,16 @@
 
 #include "FastPickUpGame/InteractSystem/FPUGInteractInterface.h"
 
-#include "FPUGWorldPickUpItem.generated.h"
+#include "FPUGWorldItemBase.generated.h"
 
 UCLASS()
-class FASTPICKUPGAME_API AFPUGWorldPickUpItem : public AActor, public IFPUGInteractInterface
+class FASTPICKUPGAME_API AFPUGWorldItemBase : public AActor, public IFPUGInteractInterface
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AFPUGWorldPickUpItem();
+	AFPUGWorldItemBase();
 
 	//Override InteractInterface functions
 
