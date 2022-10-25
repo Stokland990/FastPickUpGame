@@ -9,7 +9,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
 
-#include "FastPickUpGame/InteractSystem/FPUGInteractInterface.h"
+#include "FastPickUpGame/InteractSystem/FPUGInteractComponent.h"
+
 
 //////////////////////////////////////////////////////////////////////////
 // FPUGCharacterBase
@@ -50,6 +51,8 @@ AFPUGCharacterBase::AFPUGCharacterBase()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	InteractComponent = CreateDefaultSubobject<UFPUGInteractComponent>(TEXT("InteractComponent"));
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -82,6 +85,14 @@ void AFPUGCharacterBase::SetupPlayerInputComponent(class UInputComponent* Player
 	PlayerInputComponent->BindTouch(IE_Released, this, &AFPUGCharacterBase::TouchStopped);
 }
 
+void AFPUGCharacterBase::PlayerInteract()
+{
+	if (InteractComponent)
+	{
+		InteractComponent->Interact();
+	}
+}
+
 void AFPUGCharacterBase::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
 	Jump();
@@ -90,48 +101,6 @@ void AFPUGCharacterBase::TouchStarted(ETouchIndex::Type FingerIndex, FVector Loc
 void AFPUGCharacterBase::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
 {
 	StopJumping();
-}
-
-void AFPUGCharacterBase::PlayerInteract()
-{
-	if (GetRemoteRole() == ROLE_Authority)
-	{
-		PlayerInteractInternal();
-	}	
-	else
-	{
-		ServerInteract();
-	}
-}
-
-void AFPUGCharacterBase::PlayerInteractInternal()
-{
-	FHitResult OutHit;
-
-	FVector TraceStart = FollowCamera->GetComponentLocation();
-	FVector TraceEnd = FollowCamera->GetForwardVector() * 500.f + TraceStart;
-
-	FCollisionObjectQueryParams Params;
-	Params.AddObjectTypesToQuery(ECC_WorldDynamic);
-	Params.AddObjectTypesToQuery(ECC_WorldStatic);
-	Params.AddObjectTypesToQuery(ECC_Pawn);
-
-	bool TraceResult = GetWorld()->LineTraceSingleByObjectType(OutHit, TraceStart, TraceEnd, Params);
-
-	if (TraceResult)
-	{
-		IFPUGInteractInterface* InteractInterface = Cast<IFPUGInteractInterface>(OutHit.GetActor());
-
-		if (InteractInterface)
-		{
-			InteractInterface->Interact(this);
-		}
-	}
-}
-
-void AFPUGCharacterBase::ServerInteract_Implementation()
-{
-	PlayerInteractInternal();
 }
 
 void AFPUGCharacterBase::TurnAtRate(float Rate)
@@ -178,5 +147,10 @@ void AFPUGCharacterBase::MoveRight(float Value)
 void AFPUGCharacterBase::PickUp(AActor* ItemToPickUp)
 {
 	ItemToPickUp->Destroy();
+}
+
+USceneComponent* AFPUGCharacterBase::GetComponentForInteractTrace() const
+{
+	return FollowCamera;
 }
 

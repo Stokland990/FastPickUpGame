@@ -6,21 +6,30 @@
 #include "GameFramework/Character.h"
 
 #include "FPUGPickUpInterface.h"
+#include "FastPickUpGame/InteractSystem/FPUGInteractExecutorInterface.h"
 
 #include "FPUGCharacterBase.generated.h"
 
+class USpringArmComponent;
+class UCameraComponent;
+class UFPUGInteractComponent;
+
 UCLASS(config = Game)
-class AFPUGCharacterBase : public ACharacter, public IFPUGPickUpInterface
+class AFPUGCharacterBase : public ACharacter, public IFPUGPickUpInterface, public IFPUGInteractExecutorInterface
 {
 	GENERATED_BODY()
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
+	UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interact", meta = (AllowPrivateAccess = "true"))
+	UFPUGInteractComponent* InteractComponent;
+
 public:
 	AFPUGCharacterBase();
 
@@ -31,6 +40,8 @@ public:
 	//Override Interface functions
 
 	void PickUp(AActor* ItemToPickUp) override;
+
+	USceneComponent* GetComponentForInteractTrace() const override;
 
 protected:
 
@@ -58,24 +69,19 @@ protected:
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
-	void PlayerInteract();
-
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
-
-private:
-
-	void PlayerInteractInternal();
-
-	UFUNCTION(Server, Reliable)
-	void ServerInteract();
 
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+private:
+
+	void PlayerInteract();
 };
 
