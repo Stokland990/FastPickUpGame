@@ -1,17 +1,20 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "FastPickUpGameCharacter.h"
+#include "FPUGCharacterBase.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Engine/World.h"
+
+#include "FastPickUpGame/InteractSystem/FPUGInteractInterface.h"
 
 //////////////////////////////////////////////////////////////////////////
-// AFastPickUpGameCharacter
+// FPUGCharacterBase
 
-AFastPickUpGameCharacter::AFastPickUpGameCharacter()
+AFPUGCharacterBase::AFPUGCharacterBase()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -54,52 +57,96 @@ AFastPickUpGameCharacter::AFastPickUpGameCharacter()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void AFastPickUpGameCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void AFPUGCharacterBase::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AFastPickUpGameCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("Move Right / Left", this, &AFastPickUpGameCharacter::MoveRight);
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AFPUGCharacterBase::PlayerInteract);
+
+	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AFPUGCharacterBase::MoveForward);
+	PlayerInputComponent->BindAxis("Move Right / Left", this, &AFPUGCharacterBase::MoveRight);
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
 	PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &AFastPickUpGameCharacter::TurnAtRate);
+	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &AFPUGCharacterBase::TurnAtRate);
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AFastPickUpGameCharacter::LookUpAtRate);
+	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AFPUGCharacterBase::LookUpAtRate);
 
 	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AFastPickUpGameCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AFastPickUpGameCharacter::TouchStopped);
+	PlayerInputComponent->BindTouch(IE_Pressed, this, &AFPUGCharacterBase::TouchStarted);
+	PlayerInputComponent->BindTouch(IE_Released, this, &AFPUGCharacterBase::TouchStopped);
 }
 
-void AFastPickUpGameCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
+void AFPUGCharacterBase::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
 	Jump();
 }
 
-void AFastPickUpGameCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
+void AFPUGCharacterBase::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
 {
 	StopJumping();
 }
 
-void AFastPickUpGameCharacter::TurnAtRate(float Rate)
+void AFPUGCharacterBase::PlayerInteract()
+{
+	if (GetRemoteRole() == ROLE_Authority)
+	{
+		PlayerInteractInternal();
+	}	
+	else
+	{
+		ServerInteract();
+	}
+}
+
+void AFPUGCharacterBase::PlayerInteractInternal()
+{
+	FHitResult OutHit;
+
+	FVector TraceStart = FollowCamera->GetComponentLocation();
+	FVector TraceEnd = FollowCamera->GetForwardVector() * 500.f + TraceStart;
+
+	FCollisionObjectQueryParams Params;
+	Params.AddObjectTypesToQuery(ECC_WorldDynamic);
+	Params.AddObjectTypesToQuery(ECC_WorldStatic);
+	Params.AddObjectTypesToQuery(ECC_Pawn);
+
+	bool TraceResult = GetWorld()->LineTraceSingleByObjectType(OutHit, TraceStart, TraceEnd, Params);
+
+	if (TraceResult)
+	{
+		IFPUGInteractInterface* InteractInterface = Cast<IFPUGInteractInterface>(OutHit.GetActor());
+
+		if (InteractInterface)
+		{
+			InteractInterface->Interact(this);
+		}
+	}
+}
+
+void AFPUGCharacterBase::ServerInteract_Implementation()
+{
+	PlayerInteractInternal();
+}
+
+void AFPUGCharacterBase::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
 }
 
-void AFastPickUpGameCharacter::LookUpAtRate(float Rate)
+void AFPUGCharacterBase::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
 }
 
-void AFastPickUpGameCharacter::MoveForward(float Value)
+void AFPUGCharacterBase::MoveForward(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
@@ -113,7 +160,7 @@ void AFastPickUpGameCharacter::MoveForward(float Value)
 	}
 }
 
-void AFastPickUpGameCharacter::MoveRight(float Value)
+void AFPUGCharacterBase::MoveRight(float Value)
 {
 	if ( (Controller != nullptr) && (Value != 0.0f) )
 	{
@@ -127,3 +174,9 @@ void AFastPickUpGameCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+
+void AFPUGCharacterBase::PickUp(AActor* ItemToPickUp)
+{
+	ItemToPickUp->Destroy();
+}
+

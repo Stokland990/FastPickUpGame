@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "FastPickUpGameCharacter.generated.h"
 
-UCLASS(config=Game)
-class AFastPickUpGameCharacter : public ACharacter
+#include "FPUGPickUpInterface.h"
+
+#include "FPUGCharacterBase.generated.h"
+
+UCLASS(config = Game)
+class AFPUGCharacterBase : public ACharacter, public IFPUGPickUpInterface
 {
 	GENERATED_BODY()
 
@@ -19,11 +22,15 @@ class AFastPickUpGameCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 public:
-	AFastPickUpGameCharacter();
+	AFPUGCharacterBase();
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	float TurnRateGamepad;
+
+	//Override Interface functions
+
+	void PickUp(AActor* ItemToPickUp) override;
 
 protected:
 
@@ -51,10 +58,19 @@ protected:
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
+	void PlayerInteract();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
+
+private:
+
+	void PlayerInteractInternal();
+
+	UFUNCTION(Server, Reliable)
+	void ServerInteract();
 
 public:
 	/** Returns CameraBoom subobject **/
