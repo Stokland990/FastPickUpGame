@@ -30,23 +30,22 @@ void AFPUGGameModeBase::InitNewSpawnPoint(AActor* SpawnPointToAdd)
 void AFPUGGameModeBase::AddScoreToTeamById(int32 TeamId, int32 ScoreToAdd)
 {
 	auto CurrentGS = GetGameStateInternal();
-		
+
 	if (!CurrentGS)
 	{
 		return;
 	}
-	
+
 	TArray<int32>& TeamsInfo = CurrentGS->GetScoreInfo();
 
-	if (TeamsInfo.IsValidIndex(TeamId))
+	if (TeamsInfo.IsEmpty())
 	{
-		TeamsInfo[TeamId] += ScoreToAdd;
+		TeamsInfo.SetNum(GetNumPlayers());
 	}
-	else
-	{
-		TeamsInfo.EmplaceAt(TeamId, ScoreToAdd);
-	}
+
+	TeamsInfo[TeamId] += ScoreToAdd;
 }
+
 
 void AFPUGGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
