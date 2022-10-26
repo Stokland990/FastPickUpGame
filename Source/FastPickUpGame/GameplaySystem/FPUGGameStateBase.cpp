@@ -4,6 +4,28 @@
 #include "FPUGGameStateBase.h"
 
 #include "Net/UnrealNetwork.h"
+#include "Engine/DataTable.h"
+
+
+TArray<int32>& AFPUGGameStateBase::GetScoreInfo()
+{
+	return TeamScores;
+}
+
+int32 AFPUGGameStateBase::GetTimeRemain() const
+{
+	return TimeRemain;
+}
+
+void AFPUGGameStateBase::SetTimeRemain(const int32 NewTime)
+{
+	TimeRemain = NewTime;
+}
+
+UDataTable* AFPUGGameStateBase::GetItemsDT()
+{
+	return ItemsDT;
+}
 
 void AFPUGGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -11,9 +33,5 @@ void AFPUGGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 	DOREPLIFETIME(AFPUGGameStateBase, TeamScores);
 
-}
-
-TArray<int32>& AFPUGGameStateBase::GetScoreInfo()
-{
-	return TeamScores;
+	DOREPLIFETIME(AFPUGGameStateBase, TimeRemain);
 }

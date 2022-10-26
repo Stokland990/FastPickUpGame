@@ -7,16 +7,20 @@
 #include "FPUGGameModeBase.generated.h"
 
 class AFPUGGameStateBase;
+class UDataTable;
 
-/**
- * 
- */
 UCLASS()
 class FASTPICKUPGAME_API AFPUGGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+protected:
+
+	void BeginPlay() override;
 	
 public:
+
+	void InitNewSpawnPoint(AActor* SpawnPointToAdd);
 
 	void AddScoreToTeamById(int32 TeamId, int32 ScoreToAdd);
 
@@ -28,6 +32,18 @@ protected:
 
 private:
 
+	void UpdateMatchTimer();
+
+	void EndMatch();
+
+	void SpawnItems();
+
+private:
+
+	FTimerHandle MatchTimer;
+
 	AFPUGGameStateBase* GS;
+
+	TArray<AActor*> SpawnPoints;
 
 };

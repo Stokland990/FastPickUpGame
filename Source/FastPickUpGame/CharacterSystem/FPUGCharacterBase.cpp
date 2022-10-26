@@ -151,11 +151,9 @@ void AFPUGCharacterBase::PickUpScoreItem(const int32 ScoreToAdd)
 {
 	auto GM = GetWorld()->GetAuthGameMode<AFPUGGameModeBase>();
 
-	
-
 	if (GM)
 	{
-		const int32 TeamId = GetPlayerState()->PlayerId;
+		const int32 TeamId = GetPlayerState()->GetPlayerId();
 
 		GM->AddScoreToTeamById(TeamId, ScoreToAdd);
 	}

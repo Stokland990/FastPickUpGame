@@ -3,6 +3,10 @@
 
 #include "FPUGWorldItemBase.h"
 
+#include "Net/UnrealNetwork.h"
+
+#include "FPUGItemData.h"
+
 // Sets default values
 AFPUGWorldItemBase::AFPUGWorldItemBase()
 {
@@ -13,6 +17,7 @@ AFPUGWorldItemBase::AFPUGWorldItemBase()
 	SetRootComponent(VisualMesh);
 
 	bReplicates = true;
+	bNetLoadOnClient = true;
 
 }
 
@@ -21,6 +26,30 @@ void AFPUGWorldItemBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AFPUGWorldItemBase::OnRep_ItemID()	
+{
+	FString Context;
+
+	FName RowName = *FString::FromInt(ItemID);
+
+	auto World = GetWorld();
+
+	if (!World)
+	{
+		return;
+	}
+
+	auto ItemsDT = LoadObject<UDataTable>(GetTransientPackage(), TEXT("/Game/Core/InteractSystem/ItemSystem/DT_Items"));
+
+
+	if (ItemsDT)
+	{
+		auto ItemInfo = ItemsDT->FindRow<FItemInfoBase>(RowName, Context);
+
+		InitAppearence(ItemInfo->Mesh.LoadSynchronous(), ItemInfo->MaterialOverride.LoadSynchronous());
+	}
 }
 
 void AFPUGWorldItemBase::Interact(AActor* Executor)
@@ -32,3 +61,24 @@ bool AFPUGWorldItemBase::CanInteract(AActor* Executor)
 {
 	return false;
 }
+
+void AFPUGWorldItemBase::InitAppearence(UStaticMesh* Mesh, UMaterialInstance* Material)
+{
+	VisualMesh->SetStaticMesh(Mesh);
+
+	VisualMesh->SetMaterial(0, Material);
+}
+
+void AFPUGWorldItemBase::SetItemID(int32 NewId)
+{
+	ItemID = NewId;
+}
+
+void AFPUGWorldItemBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPUGWorldItemBase, ItemID);
+
+}
+

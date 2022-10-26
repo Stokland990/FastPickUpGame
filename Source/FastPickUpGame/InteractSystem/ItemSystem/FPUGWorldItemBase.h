@@ -24,14 +24,28 @@ public:
 
 	bool CanInteract(AActor* Executor) override;
 
+public:
+
+	void InitAppearence(UStaticMesh* Mesh, UMaterialInstance* Material);
+
+	void SetItemID(int32 NewId);
+
+	UFUNCTION()
+	void OnRep_ItemID();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
 
 public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Visual")
 	UStaticMeshComponent* VisualMesh;
 
+protected:
+
+	UPROPERTY(ReplicatedUsing = "OnRep_ItemID")
+	int32 ItemID = -1;
 
 };
