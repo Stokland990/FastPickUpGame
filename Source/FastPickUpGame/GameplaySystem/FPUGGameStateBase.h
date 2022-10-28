@@ -10,6 +10,8 @@ class UDataTable;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreUpdated, const TArray<int32>&, NewScore);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInitTime, int32, TimeLeft);
+
 UCLASS()
 class FASTPICKUPGAME_API AFPUGGameStateBase : public AGameStateBase
 {
@@ -21,6 +23,9 @@ public:
 
 	int32 GetTimeRemain() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Time")
+	void InitTimeRemain();
+
 	void SetTimeRemain(const int32 NewTime);
 
 	UDataTable* GetItemsDT();
@@ -28,10 +33,16 @@ public:
 	UFUNCTION()
 	void OnRep_TeamScores();
 
+	UFUNCTION()
+	void OnRep_TimeRemain();
+
 public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnScoreUpdated OnScoreUpdated;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnInitTime OnInitTime;
 
 
 protected:
@@ -42,7 +53,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Time")
 	int32 MatchTime = 30;
 
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Time")
+	UPROPERTY(ReplicatedUsing = "OnRep_TimeRemain", BlueprintReadOnly, Category = "Time")
 	int32 TimeRemain = MatchTime;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Items")

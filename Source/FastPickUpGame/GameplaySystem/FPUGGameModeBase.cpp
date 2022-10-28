@@ -18,11 +18,16 @@ void AFPUGGameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	SpawnItems();
+	 
+	auto LocalGS = GetGameStateInternal();
 
-	for (auto CurrentPlayer : GetGameStateInternal()->PlayerArray)
+	if (!LocalGS)
+	{
+		return;
+	}
 
-	//TODO: Remove first delay
-	GetWorld()->GetTimerManager().SetTimer(MatchTimer, this, &AFPUGGameModeBase::UpdateMatchTimer, 1.f, true, 5.f);
+	GetWorld()->GetTimerManager().SetTimer(MatchTimer, this, &AFPUGGameModeBase::UpdateMatchTimer, 1.f, true);
+
 }
 
 void AFPUGGameModeBase::InitNewSpawnPoint(AActor* SpawnPointToAdd)
