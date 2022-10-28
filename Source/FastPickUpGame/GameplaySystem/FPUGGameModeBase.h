@@ -30,6 +30,11 @@ protected:
 
 	AFPUGGameStateBase* GetGameStateInternal();
 
+protected:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
+	int32 MaxItemsOnMap = 40.f;
+
 private:
 
 	void UpdateMatchTimer();
@@ -38,6 +43,8 @@ private:
 
 	void SpawnItems();
 
+	TArray<int32> GetItemIdsInCurrentMatch();
+
 private:
 
 	FTimerHandle MatchTimer;
@@ -45,5 +52,7 @@ private:
 	AFPUGGameStateBase* GS;
 
 	TArray<AActor*> SpawnPoints;
+
+	TArray<int32> ItemIdsInCurrentMatch;
 
 };

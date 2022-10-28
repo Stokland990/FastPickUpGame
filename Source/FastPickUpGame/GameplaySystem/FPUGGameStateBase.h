@@ -8,6 +8,8 @@
 
 class UDataTable;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreUpdated, const TArray<int32>&, NewScore);
+
 UCLASS()
 class FASTPICKUPGAME_API AFPUGGameStateBase : public AGameStateBase
 {
@@ -23,9 +25,18 @@ public:
 
 	UDataTable* GetItemsDT();
 
+	UFUNCTION()
+	void OnRep_TeamScores();
+
+public:
+
+	UPROPERTY(BlueprintAssignable)
+	FOnScoreUpdated OnScoreUpdated;
+
+
 protected:
 
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Score")
+	UPROPERTY(ReplicatedUsing = "OnRep_TeamScores", BlueprintReadOnly, Category = "Score")
 	TArray<int32> TeamScores;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Time")

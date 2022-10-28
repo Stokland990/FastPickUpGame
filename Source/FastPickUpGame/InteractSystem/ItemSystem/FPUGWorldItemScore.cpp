@@ -16,3 +16,20 @@ void AFPUGWorldItemScore::Interact(AActor* Executor)
 
 	Super::Interact(Executor);
 }
+
+bool AFPUGWorldItemScore::CanInteract(AActor* Executor)
+{
+	IFPUGPickUpInterface* PickUpIterface = Cast<IFPUGPickUpInterface>(Executor);
+
+	if (PickUpIterface)
+	{
+		int32 DesiredItemId = PickUpIterface->GetItemIdToCollect();
+
+		if (ItemID == DesiredItemId)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}

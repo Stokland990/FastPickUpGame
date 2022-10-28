@@ -15,6 +15,8 @@ AFPUGWorldItemBase::AFPUGWorldItemBase()
 
 	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	SetRootComponent(VisualMesh);
+	VisualMesh->bRenderCustomDepth = false;
+	VisualMesh->CustomDepthStencilValue = 0;
 
 	bReplicates = true;
 	bNetLoadOnClient = true;

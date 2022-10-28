@@ -16,6 +16,9 @@ struct FItemInfoBase : public FTableRowBase
 public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "World Info")
+    FText ItemName;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "World Info")
     TSoftObjectPtr<UStaticMesh> Mesh;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "World Info")

@@ -14,6 +14,8 @@ class USpringArmComponent;
 class UCameraComponent;
 class UFPUGInteractComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemIdUpdated, const int32, NewId);
+
 UCLASS(config = Game)
 class AFPUGCharacterBase : public ACharacter, public IFPUGPickUpInterface, public IFPUGInteractExecutorInterface
 {
@@ -33,15 +35,24 @@ class AFPUGCharacterBase : public ACharacter, public IFPUGPickUpInterface, publi
 public:
 	AFPUGCharacterBase();
 
+	void Tick(float DeltaTime) override;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	float TurnRateGamepad;
+
+	UFUNCTION(BlueprintPure, Category = "Gameplay")
+	int32 GetItemIdToCollectInternal() const;
 
 	//Override Interface functions
 
 	void PickUpScoreItem(const int32 ScoreToAdd) override;
 
 	USceneComponent* GetComponentForInteractTrace() const override;
+
+	void SetItemIdToCollect(const int32 NewId) override;
+
+	int32 GetItemIdToCollect() const override;
 
 protected:
 
@@ -83,5 +94,18 @@ public:
 private:
 
 	void PlayerInteract();
+
+	UFUNCTION()
+	void OnRep_ItemIdItemIdToCollect();
+	
+public:
+
+	UPROPERTY(BlueprintAssignable)
+	FOnItemIdUpdated OnItemIdUpdated;
+
+private:
+
+	UPROPERTY(ReplicatedUsing = "OnRep_ItemIdItemIdToCollect")
+	int32 ItemIdToCollect = -1;
 };
 

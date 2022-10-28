@@ -27,6 +27,11 @@ UDataTable* AFPUGGameStateBase::GetItemsDT()
 	return ItemsDT;
 }
 
+void AFPUGGameStateBase::OnRep_TeamScores()
+{
+	OnScoreUpdated.Broadcast(TeamScores);
+}
+
 void AFPUGGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

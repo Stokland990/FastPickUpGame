@@ -10,6 +10,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerState.h"
+#include "Net/UnrealNetwork.h"
 
 #include "FastPickUpGame/InteractSystem/FPUGInteractComponent.h"
 #include <FastPickUpGame/GameplaySystem/FPUGGameModeBase.h>
@@ -60,6 +61,16 @@ AFPUGCharacterBase::AFPUGCharacterBase()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void AFPUGCharacterBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (IsLocallyControlled())
+	{
+		InteractComponent->CosmeticTrace();
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -94,6 +105,11 @@ void AFPUGCharacterBase::PlayerInteract()
 	{
 		InteractComponent->Interact();
 	}
+}
+
+void AFPUGCharacterBase::OnRep_ItemIdItemIdToCollect()
+{
+	OnItemIdUpdated.Broadcast(ItemIdToCollect);
 }
 
 void AFPUGCharacterBase::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -147,6 +163,11 @@ void AFPUGCharacterBase::MoveRight(float Value)
 	}
 }
 
+int32 AFPUGCharacterBase::GetItemIdToCollectInternal() const
+{
+	return ItemIdToCollect;
+}
+
 void AFPUGCharacterBase::PickUpScoreItem(const int32 ScoreToAdd)
 {
 	auto GM = GetWorld()->GetAuthGameMode<AFPUGGameModeBase>();
@@ -164,3 +185,19 @@ USceneComponent* AFPUGCharacterBase::GetComponentForInteractTrace() const
 	return FollowCamera;
 }
 
+void AFPUGCharacterBase::SetItemIdToCollect(const int32 NewId)
+{
+	ItemIdToCollect = NewId;
+}
+
+int32 AFPUGCharacterBase::GetItemIdToCollect() const
+{
+	return ItemIdToCollect;
+}
+
+void AFPUGCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AFPUGCharacterBase, ItemIdToCollect, COND_OwnerOnly);
+}

@@ -11,12 +11,15 @@
 
 #include "FPUGGameStateBase.h"
 #include "FastPickUpGame/InteractSystem/ItemSystem/FPUGWorldItemScore.h"
+#include "FastPickUpGame/CharacterSystem/FPUGPickUpInterface.h"
 
 void AFPUGGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SpawnItems();
+
+	for (auto CurrentPlayer : GetGameStateInternal()->PlayerArray)
 
 	//TODO: Remove first delay
 	GetWorld()->GetTimerManager().SetTimer(MatchTimer, this, &AFPUGGameModeBase::UpdateMatchTimer, 1.f, true, 5.f);
@@ -44,6 +47,8 @@ void AFPUGGameModeBase::AddScoreToTeamById(int32 TeamId, int32 ScoreToAdd)
 	}
 
 	TeamsInfo[TeamId] += ScoreToAdd;
+
+	CurrentGS->OnRep_TeamScores();
 }
 
 
@@ -51,7 +56,18 @@ void AFPUGGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController
 {
 	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
 
-	NewPlayer->PlayerState->SetPlayerId(GetNumPlayers() - 1);
+	const int32 NewPlayerId = GetNumPlayers() - 1;
+
+	NewPlayer->PlayerState->SetPlayerId(NewPlayerId);
+
+	const auto PlayerChar = NewPlayer->GetPawn();
+
+	IFPUGPickUpInterface* PickUpIterface = Cast<IFPUGPickUpInterface>(PlayerChar);
+
+	if (PickUpIterface)
+	{
+		PickUpIterface->SetItemIdToCollect(GetItemIdsInCurrentMatch()[NewPlayerId]);
+	}
 }
 
 void AFPUGGameModeBase::UpdateMatchTimer()
@@ -89,21 +105,13 @@ void AFPUGGameModeBase::SpawnItems()
 
 	SpawnPoints.Num();
 
-	TArray<int32> ChosenItemIndexes;
-
-	do
-	{
-		int32 RandomIndex = FMath::RandRange(1, 10);
-
-		ChosenItemIndexes.AddUnique(RandomIndex);
-
-	} while (ChosenItemIndexes.Num() < 4);
+	ItemIdsInCurrentMatch = GetItemIdsInCurrentMatch();
 
 	FString Context;
 
-	for (auto CurrentItemIndex : ChosenItemIndexes)
+	for (auto CurrentItemIndex : ItemIdsInCurrentMatch)
 	{
-		for (size_t i = 0; i < 10; i++)
+		for (size_t i = 0; i < MaxItemsOnMap / 4; i++)
 		{
 			int32 RandomIndex = FMath::RandRange(0, SpawnPoints.Num() - 1);
 
@@ -126,6 +134,25 @@ void AFPUGGameModeBase::SpawnItems()
 	}
 
 	
+}
+
+TArray<int32> AFPUGGameModeBase::GetItemIdsInCurrentMatch()
+{
+	if (ItemIdsInCurrentMatch.IsEmpty())
+	{
+		do
+		{
+			//TODO: remove magic numbers
+			int32 RandomId = FMath::RandRange(1, 10);
+
+			ItemIdsInCurrentMatch.AddUnique(RandomId);
+
+		} while (ItemIdsInCurrentMatch.Num() < 4);
+
+		return ItemIdsInCurrentMatch;
+	}
+
+	return ItemIdsInCurrentMatch;
 }
 
 

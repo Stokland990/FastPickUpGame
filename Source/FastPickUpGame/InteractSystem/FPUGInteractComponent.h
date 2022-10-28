@@ -27,6 +27,8 @@ public:
 public:
 	void Interact();
 
+	void CosmeticTrace();
+
 private:
 
 	void InteractInternal();
@@ -34,9 +36,7 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerInteract();
 
-	USceneComponent* GetExecutorTraceComponent();
-
-	FHitResult TraceForInteract();
+	void ToggleIntectComponentVisuals(UPrimitiveComponent* InteractComponent, const bool bShouldSwitchOn) const;
 
 protected: 
 
@@ -46,5 +46,11 @@ protected:
 private:
 
 	USceneComponent* ExecutorTraceComponent;
+
+	USceneComponent* GetExecutorTraceComponent();
+
+	FHitResult TraceForInteract();
+
+	UPrimitiveComponent* ComponentToInteractWith;
 		
 };

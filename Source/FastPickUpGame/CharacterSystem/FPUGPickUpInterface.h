@@ -24,4 +24,8 @@ class FASTPICKUPGAME_API IFPUGPickUpInterface
 public:
 
 	virtual void PickUpScoreItem(const int32 ScoreToAdd) = 0;
+
+	virtual void SetItemIdToCollect(const int32 NewId) = 0;
+
+	virtual int32 GetItemIdToCollect() const = 0;
 };

@@ -48,6 +48,49 @@ void UFPUGInteractComponent::Interact()
 	}
 }
 
+void UFPUGInteractComponent::CosmeticTrace()
+{
+	auto TraceResult = TraceForInteract();
+
+	if (TraceResult.bBlockingHit)
+	{
+		IFPUGInteractInterface* InteractInterface = Cast<IFPUGInteractInterface>(TraceResult.GetActor());
+
+		if (InteractInterface)
+		{
+			const bool CanInteract = InteractInterface->CanInteract(GetOwner());
+
+			if (CanInteract)
+			{
+				if (ComponentToInteractWith != TraceResult.GetComponent())
+				{
+					if (ComponentToInteractWith)
+					{
+						ToggleIntectComponentVisuals(ComponentToInteractWith, false);
+					}
+
+					ComponentToInteractWith = TraceResult.GetComponent();
+
+					ToggleIntectComponentVisuals(ComponentToInteractWith, true);
+
+					return;
+				}
+				else
+				{
+					return;
+				}
+			}
+		}
+	}
+
+	if (ComponentToInteractWith)
+	{
+		ToggleIntectComponentVisuals(ComponentToInteractWith, false);
+
+		ComponentToInteractWith = nullptr;
+	}
+}
+
 void UFPUGInteractComponent::InteractInternal()
 {
 	auto TraceResult = TraceForInteract();
@@ -58,9 +101,21 @@ void UFPUGInteractComponent::InteractInternal()
 
 		if (InteractInterface)
 		{
-			InteractInterface->Interact(GetOwner());
+			const bool CanInteract = InteractInterface->CanInteract(GetOwner());
+
+			if (CanInteract)
+			{
+				InteractInterface->Interact(GetOwner());
+			}
 		}
 	}
+}
+
+void UFPUGInteractComponent::ToggleIntectComponentVisuals(UPrimitiveComponent* InteractComponent, const bool bShouldSwitchOn) const
+{
+	InteractComponent->SetRenderCustomDepth(bShouldSwitchOn);
+
+	InteractComponent->SetCustomDepthStencilValue(bShouldSwitchOn ? 2 : 0);
 }
 
 USceneComponent* UFPUGInteractComponent::GetExecutorTraceComponent()
