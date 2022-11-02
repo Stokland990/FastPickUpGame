@@ -4,6 +4,7 @@
 #include "FPUGGameStateBase.h"
 
 #include "Net/UnrealNetwork.h"
+//#include "Net/PushModel.h"
 #include "Engine/DataTable.h"
 
 
@@ -19,6 +20,10 @@ int32 AFPUGGameStateBase::GetTimeRemain() const
 
 void AFPUGGameStateBase::InitTimeRemain()
 {
+	MARK_PROPERTY_DIRTY_FROM_NAME(AFPUGGameStateBase, TimeRemain, this);
+
+	TimeRemain = MatchTime;
+
 	OnRep_TimeRemain();
 }
 
@@ -48,8 +53,15 @@ void AFPUGGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	FDoRepLifetimeParams SharedParams;
+	SharedParams.bIsPushBased = true;
+	//SharedParams.Condition = COND_OwnerOnly;
+
 	DOREPLIFETIME(AFPUGGameStateBase, TeamScores);
 
-	DOREPLIFETIME_CONDITION(AFPUGGameStateBase, TimeRemain, COND_InitialOnly);
+	//DOREPLIFETIME_CONDITION(AFPUGGameStateBase, TimeRemain, COND_InitialOnly);
+
+
+	DOREPLIFETIME_WITH_PARAMS_FAST(AFPUGGameStateBase, TimeRemain, SharedParams);
 
 }

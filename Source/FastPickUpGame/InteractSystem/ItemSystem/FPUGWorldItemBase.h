@@ -20,7 +20,7 @@ public:
 
 	//Override InteractInterface functions
 
-	void Interact(AActor* Executor) override;
+	EInteractActionType Interact(AActor* Executor) override;
 
 	bool CanInteract(AActor* Executor) override;
 

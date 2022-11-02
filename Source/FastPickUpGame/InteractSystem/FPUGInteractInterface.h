@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+
+#include "ItemSystem/FPUGItemData.h"
+
 #include "FPUGInteractInterface.generated.h"
 
 // This class does not need to be modified.
@@ -27,5 +30,5 @@ public:
 	virtual bool CanInteract(AActor* Executor) = 0;
 
 	UFUNCTION(BlueprintCallable, Category = "Interact")
-	virtual void Interact(AActor* Executor) = 0;
+	virtual EInteractActionType Interact(AActor* Executor) = 0;
 };

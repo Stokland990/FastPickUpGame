@@ -27,3 +27,10 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Base Info")
     bool bIsEpic = false;;
 };
+
+UENUM(BlueprintType)
+enum class EInteractActionType : uint8
+{
+    None		UMETA(DisplayName = "None"),
+    ScorePickUp	UMETA(DisplayName = "ScorePickUp"),
+};

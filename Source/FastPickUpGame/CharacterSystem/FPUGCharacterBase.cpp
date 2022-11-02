@@ -168,7 +168,7 @@ int32 AFPUGCharacterBase::GetItemIdToCollectInternal() const
 	return ItemIdToCollect;
 }
 
-void AFPUGCharacterBase::PickUpScoreItem(const int32 ScoreToAdd)
+void AFPUGCharacterBase::PickUpScoreItem()
 {
 	auto GM = GetWorld()->GetAuthGameMode<AFPUGGameModeBase>();
 
@@ -176,7 +176,21 @@ void AFPUGCharacterBase::PickUpScoreItem(const int32 ScoreToAdd)
 	{
 		const int32 TeamId = GetPlayerState()->GetPlayerId();
 
-		GM->AddScoreToTeamById(TeamId, ScoreToAdd);
+		GM->AddScoreToTeamById(TeamId, 1);
+	}
+}
+
+void AFPUGCharacterBase::HandleInteractAction(EInteractActionType Type)
+{
+	switch (Type)
+	{
+	case EInteractActionType::ScorePickUp:
+
+		PickUpScoreItem();
+
+		break;
+	default:
+		break;
 	}
 }
 

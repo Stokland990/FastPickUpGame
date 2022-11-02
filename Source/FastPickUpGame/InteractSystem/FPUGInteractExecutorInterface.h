@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+
+#include "ItemSystem/FPUGItemData.h"
+
 #include "FPUGInteractExecutorInterface.generated.h"
 
 // This class does not need to be modified.
@@ -24,4 +27,6 @@ class FASTPICKUPGAME_API IFPUGInteractExecutorInterface
 public:
 
 	virtual USceneComponent* GetComponentForInteractTrace() const = 0;
+
+	virtual void HandleInteractAction(EInteractActionType Type) = 0;
 };

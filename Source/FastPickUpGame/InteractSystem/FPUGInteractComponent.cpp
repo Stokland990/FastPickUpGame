@@ -96,7 +96,14 @@ void UFPUGInteractComponent::InteractInternal()
 
 			if (CanInteract)
 			{
-				InteractInterface->Interact(GetOwner());
+				auto InteractType = InteractInterface->Interact(GetOwner());
+
+				auto ExecutorInterface = Cast<IFPUGInteractExecutorInterface>(GetOwner());
+
+				if (ExecutorInterface)
+				{
+					ExecutorInterface->HandleInteractAction(InteractType);
+				}
 			}
 		}
 	}

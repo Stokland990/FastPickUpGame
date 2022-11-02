@@ -54,7 +54,7 @@ protected:
 	int32 MatchTime = 30;
 
 	UPROPERTY(ReplicatedUsing = "OnRep_TimeRemain", BlueprintReadOnly, Category = "Time")
-	int32 TimeRemain = MatchTime;
+	int32 TimeRemain = -1;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Items")
 	UDataTable* ItemsDT;

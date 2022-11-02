@@ -26,6 +26,8 @@ void AFPUGGameModeBase::BeginPlay()
 		return;
 	}
 
+	LocalGS->InitTimeRemain();
+
 	GetWorld()->GetTimerManager().SetTimer(MatchTimer, this, &AFPUGGameModeBase::UpdateMatchTimer, 1.f, true);
 
 }

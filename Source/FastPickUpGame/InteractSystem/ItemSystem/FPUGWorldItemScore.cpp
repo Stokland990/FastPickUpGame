@@ -5,16 +5,11 @@
 
 #include "FastPickUpGame/CharacterSystem/FPUGPickUpInterface.h"
 
-void AFPUGWorldItemScore::Interact(AActor* Executor)
+EInteractActionType AFPUGWorldItemScore::Interact(AActor* Executor)
 {
-	IFPUGPickUpInterface* PickUpIterface = Cast<IFPUGPickUpInterface>(Executor);
-
-	if (PickUpIterface)
-	{
-		PickUpIterface->PickUpScoreItem(ScoreValue);
-	}
-
 	Super::Interact(Executor);
+
+	return EInteractActionType::ScorePickUp;
 }
 
 bool AFPUGWorldItemScore::CanInteract(AActor* Executor)

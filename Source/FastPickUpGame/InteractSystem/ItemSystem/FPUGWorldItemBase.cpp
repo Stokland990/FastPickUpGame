@@ -54,9 +54,11 @@ void AFPUGWorldItemBase::OnRep_ItemID()
 	}
 }
 
-void AFPUGWorldItemBase::Interact(AActor* Executor)
+EInteractActionType AFPUGWorldItemBase::Interact(AActor* Executor)
 {
 	Destroy();
+
+	return EInteractActionType::None;
 }
 
 bool AFPUGWorldItemBase::CanInteract(AActor* Executor)

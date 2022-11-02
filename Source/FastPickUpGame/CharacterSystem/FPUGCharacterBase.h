@@ -46,7 +46,7 @@ public:
 
 	//Override Interface functions
 
-	void PickUpScoreItem(const int32 ScoreToAdd) override;
+	void HandleInteractAction(EInteractActionType Type) override;
 
 	USceneComponent* GetComponentForInteractTrace() const override;
 
@@ -94,6 +94,8 @@ public:
 private:
 
 	void PlayerInteract();
+
+	void PickUpScoreItem();
 
 	UFUNCTION()
 	void OnRep_ItemIdItemIdToCollect();
