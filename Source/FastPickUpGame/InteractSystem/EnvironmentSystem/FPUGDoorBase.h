@@ -19,6 +19,9 @@ public:
 
 	void Tick(float DeltaTime) override;
 
+	void OnConstruction(const FTransform& Transform) override;
+
+
 public:
 
 	void ToggleDoorState();
@@ -33,24 +36,31 @@ protected:
 private:
 
 	void ToggleDoorPosition();
-public:
 
-	UPROPERTY(VisibleAnywhere, Category = "Visual")
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Visual")
 	UStaticMeshComponent* VisualMesh;
 
 	UPROPERTY(VisibleAnywhere, Category = "Visual")
 	USceneComponent* RootPoint;
 
-protected:
-
-	UPROPERTY(EditDefaultsOnly, Category = "DoorSettings")
+	UPROPERTY(EditAnywhere, Category = "DoorSettings")
 	FVector OpenDoorPosition = FVector(0.f, 0.f, 200.f);
 
 	UPROPERTY(EditDefaultsOnly, Category = "DoorSettings")
 	FVector CloseDoorPosition = FVector(0.f);
 
-	UPROPERTY(EditDefaultsOnly, Category = "DoorSettings")
+	UPROPERTY(EditAnywhere, Category = "DoorSettings")
 	float DoorSpeed = 10.f;
+
+#if WITH_EDITORONLY_DATA
+
+	UPROPERTY(EditAnywhere, Category = "DoorSettings")
+	FVector DoorMeshSize = FVector(1.f, .2f, 2.f);
+
+#endif
+
 
 private:
 	FVector TargetPosition;

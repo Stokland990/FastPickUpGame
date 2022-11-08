@@ -16,7 +16,6 @@ AFPUGDoorBase::AFPUGDoorBase()
 
 	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	VisualMesh->SetupAttachment(RootComponent);
-	
 
 	bReplicates = true;
 }
@@ -41,6 +40,17 @@ void AFPUGDoorBase::Tick(float DeltaTime)
 	{
 		SetActorTickEnabled(false);
 	}
+}
+
+void AFPUGDoorBase::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+#if WITH_EDITOR
+	{
+		VisualMesh->SetRelativeScale3D(DoorMeshSize);
+	}
+#endif
 }
 
 void AFPUGDoorBase::ToggleDoorState()
