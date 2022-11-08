@@ -4,8 +4,10 @@
 #include "FPUGGameStateBase.h"
 
 #include "Net/UnrealNetwork.h"
-//#include "Net/PushModel.h"
-#include "Engine/DataTable.h"
+#include "GameFramework/HUD.h"
+#include "GameFramework/PlayerState.h"
+
+#include "FastPickUpGame/GameplaySystem/PlayerControlSystem/FPUGHUDInterface.h"
 
 
 TArray<int32>& AFPUGGameStateBase::GetScoreInfo()
@@ -32,6 +34,15 @@ void AFPUGGameStateBase::SetTimeRemain(const int32 NewTime)
 	TimeRemain = NewTime;
 }
 
+void AFPUGGameStateBase::SetWinnerId(const int32 WinnerId)
+{
+	MARK_PROPERTY_DIRTY_FROM_NAME(AFPUGGameStateBase, WinnerPlayerId, this);
+
+	WinnerPlayerId = WinnerId;
+
+	OnRep_WinnerPlayerId();
+}
+
 UDataTable* AFPUGGameStateBase::GetItemsDT()
 {
 	return ItemsDT;
@@ -47,6 +58,30 @@ void AFPUGGameStateBase::OnRep_TimeRemain()
 	OnInitTime.Broadcast(TimeRemain);
 }
 
+void AFPUGGameStateBase::OnRep_WinnerPlayerId()
+{
+	for (const auto CurrentPS : PlayerArray)
+	{
+		const int32 CurrentPlayerId = CurrentPS->GetPlayerId();
+
+		const auto PC = CurrentPS->GetPlayerController();
+
+		if(!PC)
+		{
+			continue;
+		}
+
+		const auto CurrentHUD = PC->GetHUD();
+
+		const auto HUDInterface = Cast<IFPUGHUDInterface>(CurrentHUD);
+
+		if (HUDInterface)
+		{
+			HUDInterface->EndMatchNotify(WinnerPlayerId);
+		}
+	}
+}
+
 void AFPUGGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 
@@ -55,13 +90,13 @@ void AFPUGGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 	FDoRepLifetimeParams SharedParams;
 	SharedParams.bIsPushBased = true;
-	//SharedParams.Condition = COND_OwnerOnly;
+	SharedParams.Condition = COND_None;
 
 	DOREPLIFETIME(AFPUGGameStateBase, TeamScores);
 
 	//DOREPLIFETIME_CONDITION(AFPUGGameStateBase, TimeRemain, COND_InitialOnly);
 
-
 	DOREPLIFETIME_WITH_PARAMS_FAST(AFPUGGameStateBase, TimeRemain, SharedParams);
+	DOREPLIFETIME_WITH_PARAMS_FAST(AFPUGGameStateBase, WinnerPlayerId, SharedParams);
 
 }

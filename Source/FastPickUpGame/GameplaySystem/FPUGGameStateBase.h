@@ -28,6 +28,8 @@ public:
 
 	void SetTimeRemain(const int32 NewTime);
 
+	void SetWinnerId(const int32 WinnerId);
+
 	UDataTable* GetItemsDT();
 
 	UFUNCTION()
@@ -35,6 +37,9 @@ public:
 
 	UFUNCTION()
 	void OnRep_TimeRemain();
+
+	UFUNCTION()
+	void OnRep_WinnerPlayerId();
 
 public:
 
@@ -58,5 +63,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Items")
 	UDataTable* ItemsDT;
+
+	UPROPERTY(ReplicatedUsing = "OnRep_WinnerPlayerId", BlueprintReadOnly, Category = "Score")
+	int32 WinnerPlayerId = -2;
 	
 };

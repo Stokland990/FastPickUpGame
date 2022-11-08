@@ -8,6 +8,7 @@
 
 class AFPUGGameStateBase;
 class UDataTable;
+class AFPUGDoorTechnical;
 
 UCLASS()
 class FASTPICKUPGAME_API AFPUGGameModeBase : public AGameModeBase
@@ -22,11 +23,15 @@ public:
 
 	void InitNewSpawnPoint(AActor* SpawnPointToAdd);
 
+	void InitNewTechDoor(AFPUGDoorTechnical* DoorToAdd);
+
 	void AddScoreToTeamById(int32 TeamId, int32 ScoreToAdd);
 
 protected:
 
 	void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+
+	void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
 	AFPUGGameStateBase* GetGameStateInternal();
 
@@ -45,14 +50,29 @@ private:
 
 	TArray<int32> GetItemIdsInCurrentMatch();
 
+	void RestartMatch();
+
+	void HandleNewPlayerInMatch();
+
+	void StartMatch();
+
+	void OpenTechDoors();
+
 private:
 
 	FTimerHandle MatchTimer;
 
+	UPROPERTY()
 	AFPUGGameStateBase* GS;
 
+	UPROPERTY()
 	TArray<AActor*> SpawnPoints;
 
+	UPROPERTY()
+	TArray<AFPUGDoorTechnical*> TechDoors;
+
 	TArray<int32> ItemIdsInCurrentMatch;
+
+	bool HasMatchStarted = false;
 
 };

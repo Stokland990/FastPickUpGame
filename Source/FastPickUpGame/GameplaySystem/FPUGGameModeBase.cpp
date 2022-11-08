@@ -8,27 +8,19 @@
 #include "Engine/World.h"
 #include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "FPUGGameStateBase.h"
 #include "FastPickUpGame/InteractSystem/ItemSystem/FPUGWorldItemScore.h"
 #include "FastPickUpGame/CharacterSystem/FPUGPickUpInterface.h"
+#include "FastPickUpGame/InteractSystem/EnvironmentSystem/FPUGDoorTechnical.h"
+#include "WorldPartition/WorldPartition.h"
 
 void AFPUGGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SpawnItems();
-	 
-	auto LocalGS = GetGameStateInternal();
-
-	if (!LocalGS)
-	{
-		return;
-	}
-
-	LocalGS->InitTimeRemain();
-
-	GetWorld()->GetTimerManager().SetTimer(MatchTimer, this, &AFPUGGameModeBase::UpdateMatchTimer, 1.f, true);
 
 }
 
@@ -37,16 +29,19 @@ void AFPUGGameModeBase::InitNewSpawnPoint(AActor* SpawnPointToAdd)
 	SpawnPoints.AddUnique(SpawnPointToAdd);
 }
 
+void AFPUGGameModeBase::InitNewTechDoor(AFPUGDoorTechnical* DoorToAdd)
+{
+	TechDoors.AddUnique(DoorToAdd);
+}
+
 void AFPUGGameModeBase::AddScoreToTeamById(int32 TeamId, int32 ScoreToAdd)
 {
-	auto CurrentGS = GetGameStateInternal();
-
-	if (!CurrentGS)
+	if (!GetGameStateInternal())
 	{
 		return;
 	}
 
-	TArray<int32>& TeamsInfo = CurrentGS->GetScoreInfo();
+	TArray<int32>& TeamsInfo = GS->GetScoreInfo();
 
 	if (TeamsInfo.IsEmpty())
 	{
@@ -55,7 +50,7 @@ void AFPUGGameModeBase::AddScoreToTeamById(int32 TeamId, int32 ScoreToAdd)
 
 	TeamsInfo[TeamId] += ScoreToAdd;
 
-	CurrentGS->OnRep_TeamScores();
+	GS->OnRep_TeamScores();
 }
 
 
@@ -69,26 +64,37 @@ void AFPUGGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController
 
 	const auto PlayerChar = NewPlayer->GetPawn();
 
-	IFPUGPickUpInterface* PickUpIterface = Cast<IFPUGPickUpInterface>(PlayerChar);
+	IFPUGPickUpInterface* PickUpInterface = Cast<IFPUGPickUpInterface>(PlayerChar);
 
-	if (PickUpIterface)
+	if (PickUpInterface)
 	{
-		PickUpIterface->SetItemIdToCollect(GetItemIdsInCurrentMatch()[NewPlayerId]);
+		PickUpInterface->SetItemIdToCollect(GetItemIdsInCurrentMatch()[NewPlayerId]);
 	}
+
+	HandleNewPlayerInMatch();
+}
+
+void AFPUGGameModeBase::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+{
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+
+	if (GetNumPlayers() == 2)
+	{
+		ErrorMessage = "Too many players in game";
+	}
+	
 }
 
 void AFPUGGameModeBase::UpdateMatchTimer()
 {
-	auto CurrentGS = GetGameStateInternal();
-
-	if (!CurrentGS)
+	if (!GetGameStateInternal())
 	{
 		return;
 	}
 
-	const int32 UpdatedTime = CurrentGS->GetTimeRemain() - 1;
+	const int32 UpdatedTime = GS->GetTimeRemain() - 1;
 
-	CurrentGS->SetTimeRemain(UpdatedTime);
+	GS->SetTimeRemain(UpdatedTime);
 
 	if (UpdatedTime <= 0)
 	{
@@ -98,9 +104,48 @@ void AFPUGGameModeBase::UpdateMatchTimer()
 
 void AFPUGGameModeBase::EndMatch()
 {
+	if (!GetGameStateInternal())
+	{
+		return;
+	}
+
 	GetWorld()->GetTimerManager().ClearTimer(MatchTimer);
 
-	//TPODO: End Game
+	int32 WinnerId;
+	int32 Score = -1;
+	bool bIsDraw = true;
+
+	for(uint8 i = 0; i < GS->GetScoreInfo().Num(); i++)
+	{
+		if (i == 0)
+		{
+			Score = GS->GetScoreInfo()[i];
+		}
+		else
+		{
+			if (Score != GS->GetScoreInfo()[i])
+			{
+				bIsDraw = false;
+
+				break;
+			}
+		}
+	}
+
+	if (bIsDraw)
+	{
+		WinnerId = -1;
+	}
+	else
+	{
+		UKismetMathLibrary::MaxOfIntArray(GS->GetScoreInfo(), WinnerId, Score);
+	}
+
+	GS->SetWinnerId(WinnerId);
+
+	FTimerHandle RestartTimer;
+
+	GetWorld()->GetTimerManager().SetTimer(RestartTimer, this, &AFPUGGameModeBase::RestartMatch, 5.f);
 }
 
 void AFPUGGameModeBase::SpawnItems()
@@ -109,8 +154,6 @@ void AFPUGGameModeBase::SpawnItems()
 	{
 		return;
 	}
-
-	SpawnPoints.Num();
 
 	ItemIdsInCurrentMatch = GetItemIdsInCurrentMatch();
 
@@ -162,12 +205,59 @@ TArray<int32> AFPUGGameModeBase::GetItemIdsInCurrentMatch()
 	return ItemIdsInCurrentMatch;
 }
 
+void AFPUGGameModeBase::RestartMatch()
+{
+	const UWorld* World = GetWorld();
+
+	if (!World)
+	{
+		return;
+	}
+
+	const FString MapPath = "/Game/01_Levels/ThirdPersonMap";
+
+	GetWorld()->ServerTravel(MapPath);
+}
+
+void AFPUGGameModeBase::HandleNewPlayerInMatch()
+{
+	if (!HasMatchStarted && GetNumPlayers() >= 2)
+	{
+		HasMatchStarted = true;
+
+		GetWorld()->GetTimerManager().SetTimer(MatchTimer, this, &AFPUGGameModeBase::StartMatch, 3.f, false);
+	}
+}
+
+void AFPUGGameModeBase::StartMatch()
+{
+	if (!GetGameStateInternal())
+	{
+		return;
+	}
+
+	GS->InitTimeRemain();
+
+	GetWorld()->GetTimerManager().SetTimer(MatchTimer, this, &AFPUGGameModeBase::UpdateMatchTimer, 1.f, true);
+
+	OpenTechDoors();
+
+}
+
+void AFPUGGameModeBase::OpenTechDoors()
+{
+	for (const auto CurrentDoor : TechDoors)
+	{
+		CurrentDoor->ToggleDoorState();
+	}
+}
+
 
 AFPUGGameStateBase* AFPUGGameModeBase::GetGameStateInternal()
 {
 	if (!GS)
 	{
-		auto World = GetWorld();
+		const auto World = GetWorld();
 
 		if (World)
 		{
