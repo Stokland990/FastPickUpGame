@@ -9,6 +9,7 @@
 #include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "FPUGGameStateBase.h"
 #include "FastPickUpGame/InteractSystem/ItemSystem/FPUGWorldItemScore.h"
@@ -21,7 +22,15 @@ void AFPUGGameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	SpawnItems();
+}
 
+void AFPUGGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+
+	const FString ModeInfo = UGameplayStatics::ParseOption(Options, "IsSinglePlayer");
+
+	bIsSinglePlayer = ModeInfo.ToBool();
 }
 
 void AFPUGGameModeBase::InitNewSpawnPoint(AActor* SpawnPointToAdd)
@@ -53,6 +62,25 @@ void AFPUGGameModeBase::AddScoreToTeamById(int32 TeamId, int32 ScoreToAdd)
 	GS->OnRep_TeamScores();
 }
 
+void AFPUGGameModeBase::InitScoreForSinglePlayer()
+{
+	if (!GetGameStateInternal())
+	{
+		return;
+	}
+
+	TArray<int32>& TeamsInfo = GS->GetScoreInfo();
+
+	if (TeamsInfo.IsEmpty())
+	{
+		TeamsInfo.SetNum(2);
+	}
+
+	TeamsInfo[1] = FMath::RandRange(6, 10);
+
+	GS->OnRep_TeamScores();
+}
+
 
 void AFPUGGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
@@ -78,7 +106,7 @@ void AFPUGGameModeBase::PreLogin(const FString& Options, const FString& Address,
 {
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 
-	if (GetNumPlayers() == 2)
+	if (GetNumPlayers() == 2 || HasMatchStarted)
 	{
 		ErrorMessage = "Too many players in game";
 	}
@@ -145,7 +173,7 @@ void AFPUGGameModeBase::EndMatch()
 
 	FTimerHandle RestartTimer;
 
-	GetWorld()->GetTimerManager().SetTimer(RestartTimer, this, &AFPUGGameModeBase::RestartMatch, 5.f);
+	GetWorld()->GetTimerManager().SetTimer(RestartTimer, this, &AFPUGGameModeBase::RestartMatch, PostMatchTime);
 }
 
 void AFPUGGameModeBase::SpawnItems()
@@ -182,8 +210,6 @@ void AFPUGGameModeBase::SpawnItems()
 
 		}
 	}
-
-	
 }
 
 TArray<int32> AFPUGGameModeBase::GetItemIdsInCurrentMatch()
@@ -221,11 +247,13 @@ void AFPUGGameModeBase::RestartMatch()
 
 void AFPUGGameModeBase::HandleNewPlayerInMatch()
 {
-	if (!HasMatchStarted && GetNumPlayers() >= 2)
+	const int32 PlayersNeededForMatchToStart = bIsSinglePlayer ? 1 : 2;
+
+	if (!HasMatchStarted && GetNumPlayers() >= PlayersNeededForMatchToStart)
 	{
 		HasMatchStarted = true;
 
-		GetWorld()->GetTimerManager().SetTimer(MatchTimer, this, &AFPUGGameModeBase::StartMatch, 3.f, false);
+		GetWorld()->GetTimerManager().SetTimer(MatchTimer, this, &AFPUGGameModeBase::StartMatch, PreMatchTime, false);
 	}
 }
 
@@ -234,6 +262,11 @@ void AFPUGGameModeBase::StartMatch()
 	if (!GetGameStateInternal())
 	{
 		return;
+	}
+
+	if (bIsSinglePlayer)
+	{
+		InitScoreForSinglePlayer();
 	}
 
 	GS->InitTimeRemain();

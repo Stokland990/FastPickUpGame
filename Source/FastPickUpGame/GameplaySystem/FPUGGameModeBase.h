@@ -18,6 +18,8 @@ class FASTPICKUPGAME_API AFPUGGameModeBase : public AGameModeBase
 protected:
 
 	void BeginPlay() override;
+
+	void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	
 public:
 
@@ -26,6 +28,8 @@ public:
 	void InitNewTechDoor(AFPUGDoorTechnical* DoorToAdd);
 
 	void AddScoreToTeamById(int32 TeamId, int32 ScoreToAdd);
+
+	void InitScoreForSinglePlayer();
 
 protected:
 
@@ -38,7 +42,13 @@ protected:
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
-	int32 MaxItemsOnMap = 40.f;
+	int32 MaxItemsOnMap = 40;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
+	int32 PreMatchTime = 5;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
+	int32 PostMatchTime = 5;
 
 private:
 
@@ -74,5 +84,9 @@ private:
 	TArray<int32> ItemIdsInCurrentMatch;
 
 	bool HasMatchStarted = false;
+
+	bool bIsSinglePlayer = false;
+
+
 
 };
