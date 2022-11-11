@@ -1,5 +1,5 @@
 # FastPickUpGame
-This is a small game made with Unreal Engine 5 with the purpuse of showing some of my skills.
+This is a small game made with Unreal Engine 5 to show some of my skills.
 
 Please keep in mind that the project is just an example of my code and I did not refactor it to perfection, so there are lots of things to improve. 
 
