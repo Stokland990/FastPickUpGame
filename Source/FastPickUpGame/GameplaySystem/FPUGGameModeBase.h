@@ -15,11 +15,6 @@ class FASTPICKUPGAME_API AFPUGGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
-protected:
-
-	void BeginPlay() override;
-
-	void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	
 public:
 
@@ -27,32 +22,23 @@ public:
 
 	void InitNewTechDoor(AFPUGDoorTechnical* DoorToAdd);
 
-	void AddScoreToTeamById(int32 TeamId, int32 ScoreToAdd);
+	void AddScoreToTeamById(const int32 TeamId, const int32 ScoreToAdd);
 
-	void InitScoreForSinglePlayer();
+	void InitScore();
 
 protected:
+
+	void BeginPlay() override;
+
+	void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
 	void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 
 	void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
-	AFPUGGameStateBase* GetGameStateInternal();
-
-protected:
-
-	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
-	int32 MaxItemsOnMap = 40;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
-	int32 PreMatchTime = 5;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
-	int32 PostMatchTime = 5;
-
 private:
 
-	void UpdateMatchTimer();
+	AFPUGGameStateBase* GetGameStateInternal();
 
 	void EndMatch();
 
@@ -60,7 +46,7 @@ private:
 
 	TArray<int32> GetItemIdsInCurrentMatch();
 
-	void RestartMatch();
+	void RestartMatch() const;
 
 	void HandleNewPlayerInMatch();
 
@@ -68,25 +54,41 @@ private:
 
 	void OpenTechDoors();
 
+	void ChooseWinner();
+
+protected:
+
+	//Number of total items that will be spawn in world at the start of a match
+	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
+	int32 MaxItemsOnMap = 40;
+
+	//Time before match starts, but after every player is ready to start
+	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
+	int32 PreMatchTime = 5;
+
+	//Time after match ends, but before restart
+	UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
+	int32 PostMatchTime = 5;
+
 private:
 
 	FTimerHandle MatchTimer;
 
-	UPROPERTY()
-	AFPUGGameStateBase* GS;
-
-	UPROPERTY()
-	TArray<AActor*> SpawnPoints;
-
-	UPROPERTY()
-	TArray<AFPUGDoorTechnical*> TechDoors;
-
+	//List of item Ids that was randomly chosen for current match.
 	TArray<int32> ItemIdsInCurrentMatch;
 
 	bool HasMatchStarted = false;
 
 	bool bIsSinglePlayer = false;
 
+	UPROPERTY()
+	AFPUGGameStateBase* GS;
 
+	//List of spawn points for world items
+	UPROPERTY()
+	TArray<AActor*> SpawnPoints;
 
+	//Doors that should open on the start of a match
+	UPROPERTY()
+	TArray<AFPUGDoorTechnical*> TechDoors;
 };

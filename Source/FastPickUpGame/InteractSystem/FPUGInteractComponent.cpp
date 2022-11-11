@@ -17,18 +17,9 @@ UFPUGInteractComponent::UFPUGInteractComponent()
 	SetIsReplicatedByDefault(true);
 }
 
-
-// Called when the game starts
-void UFPUGInteractComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// ...
-	
-}
-
 void UFPUGInteractComponent::Interact()
 {
+	//If Host or single player - do interact, otherwise send RPC
 	if (GetOwner()->GetLocalRole() == ROLE_Authority)
 	{
 		InteractInternal();
@@ -41,7 +32,7 @@ void UFPUGInteractComponent::Interact()
 
 void UFPUGInteractComponent::CosmeticTrace()
 {
-	auto TraceResult = TraceForInteract();
+	const auto TraceResult = TraceForInteract();
 
 	if (TraceResult.bBlockingHit)
 	{
@@ -57,26 +48,22 @@ void UFPUGInteractComponent::CosmeticTrace()
 				{
 					if (ComponentToInteractWith)
 					{
-						ToggleIntectComponentVisuals(ComponentToInteractWith, false);
+						ToggleInteractComponentVisuals(ComponentToInteractWith, false);
 					}
 
 					ComponentToInteractWith = TraceResult.GetComponent();
 
-					ToggleIntectComponentVisuals(ComponentToInteractWith, true);
-
-					return;
+					ToggleInteractComponentVisuals(ComponentToInteractWith, true);
 				}
-				else
-				{
-					return;
-				}
+				
+				return;
 			}
 		}
 	}
 
 	if (ComponentToInteractWith)
 	{
-		ToggleIntectComponentVisuals(ComponentToInteractWith, false);
+		ToggleInteractComponentVisuals(ComponentToInteractWith, false);
 
 		ComponentToInteractWith = nullptr;
 	}
@@ -84,7 +71,7 @@ void UFPUGInteractComponent::CosmeticTrace()
 
 void UFPUGInteractComponent::InteractInternal()
 {
-	auto TraceResult = TraceForInteract();
+	const auto TraceResult = TraceForInteract();
 
 	if (TraceResult.bBlockingHit)
 	{
@@ -96,9 +83,9 @@ void UFPUGInteractComponent::InteractInternal()
 
 			if (CanInteract)
 			{
-				auto InteractType = InteractInterface->Interact(GetOwner());
+				const auto InteractType = InteractInterface->Interact(GetOwner());
 
-				auto ExecutorInterface = Cast<IFPUGInteractExecutorInterface>(GetOwner());
+				const auto ExecutorInterface = Cast<IFPUGInteractExecutorInterface>(GetOwner());
 
 				if (ExecutorInterface)
 				{
@@ -109,7 +96,7 @@ void UFPUGInteractComponent::InteractInternal()
 	}
 }
 
-void UFPUGInteractComponent::ToggleIntectComponentVisuals(UPrimitiveComponent* InteractComponent, const bool bShouldSwitchOn) const
+void UFPUGInteractComponent::ToggleInteractComponentVisuals(UPrimitiveComponent* InteractComponent, const bool bShouldSwitchOn)
 {
 	InteractComponent->SetRenderCustomDepth(bShouldSwitchOn);
 
@@ -120,7 +107,7 @@ USceneComponent* UFPUGInteractComponent::GetExecutorTraceComponent()
 {
 	if (!ExecutorTraceComponent)
 	{
-		auto ExecutorInterface = Cast<IFPUGInteractExecutorInterface>(GetOwner());
+		const auto ExecutorInterface = Cast<IFPUGInteractExecutorInterface>(GetOwner());
 
 		if (ExecutorInterface)
 		{
@@ -131,16 +118,18 @@ USceneComponent* UFPUGInteractComponent::GetExecutorTraceComponent()
 	return ExecutorTraceComponent;
 }
 
+//Making trace for interact
 FHitResult UFPUGInteractComponent::TraceForInteract()
 {
 	FHitResult OutHit;
 
+	//Getting trace component from Executor
 	const auto TraceComp = GetExecutorTraceComponent();
 	
 	if (TraceComp)
 	{
-		FVector TraceStart = TraceComp->GetComponentLocation();
-		FVector TraceEnd = TraceComp->GetForwardVector() * InteractDistance + TraceStart;
+		const FVector TraceStart = TraceComp->GetComponentLocation();
+		const FVector TraceEnd = TraceComp->GetForwardVector() * InteractDistance + TraceStart;
 
 		FCollisionObjectQueryParams Params;
 		Params.AddObjectTypesToQuery(ECC_WorldDynamic);

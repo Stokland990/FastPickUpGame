@@ -26,6 +26,7 @@ class FASTPICKUPGAME_API IFPUGInteractInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
+	//Checks if Executor can interact with object
 	UFUNCTION(BlueprintCallable, Category = "Interact")
 	virtual bool CanInteract(AActor* Executor) = 0;
 

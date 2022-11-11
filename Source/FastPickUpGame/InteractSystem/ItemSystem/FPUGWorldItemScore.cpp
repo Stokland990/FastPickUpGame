@@ -14,11 +14,11 @@ EInteractActionType AFPUGWorldItemScore::Interact(AActor* Executor)
 
 bool AFPUGWorldItemScore::CanInteract(AActor* Executor)
 {
-	IFPUGPickUpInterface* PickUpIterface = Cast<IFPUGPickUpInterface>(Executor);
+	IFPUGPickUpInterface* PickUpInterface = Cast<IFPUGPickUpInterface>(Executor);
 
-	if (PickUpIterface)
+	if (PickUpInterface)
 	{
-		int32 DesiredItemId = PickUpIterface->GetItemIdToCollect();
+		const int32 DesiredItemId = PickUpInterface->GetItemIdToCollect();
 
 		if (ItemID == DesiredItemId)
 		{

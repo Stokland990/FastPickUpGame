@@ -32,25 +32,25 @@ void AFPUGWorldItemBase::BeginPlay()
 
 void AFPUGWorldItemBase::OnRep_ItemID()	
 {
-	FString Context;
+	const FString Context;
 
-	FName RowName = *FString::FromInt(ItemID);
+	const FName RowName = *FString::FromInt(ItemID);
 
-	auto World = GetWorld();
+	const auto World = GetWorld();
 
 	if (!World)
 	{
 		return;
 	}
 
-	auto ItemsDT = LoadObject<UDataTable>(GetTransientPackage(), TEXT("/Game/Core/InteractSystem/ItemSystem/DT_Items"));
+	const auto ItemsDT = LoadObject<UDataTable>(GetTransientPackage(), TEXT("/Game/Core/InteractSystem/ItemSystem/DT_Items"));
 
 
 	if (ItemsDT)
 	{
-		auto ItemInfo = ItemsDT->FindRow<FItemInfoBase>(RowName, Context);
+		const auto ItemInfo = ItemsDT->FindRow<FItemInfoBase>(RowName, Context);
 
-		InitAppearence(ItemInfo->Mesh.LoadSynchronous(), ItemInfo->MaterialOverride.LoadSynchronous());
+		InitAppearance(ItemInfo->Mesh.LoadSynchronous(), ItemInfo->MaterialOverride.LoadSynchronous());
 	}
 }
 
@@ -66,7 +66,7 @@ bool AFPUGWorldItemBase::CanInteract(AActor* Executor)
 	return false;
 }
 
-void AFPUGWorldItemBase::InitAppearence(UStaticMesh* Mesh, UMaterialInstance* Material)
+void AFPUGWorldItemBase::InitAppearance(UStaticMesh* Mesh, UMaterialInstance* Material) const
 {
 	VisualMesh->SetStaticMesh(Mesh);
 

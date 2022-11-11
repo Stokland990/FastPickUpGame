@@ -26,7 +26,9 @@ class FASTPICKUPGAME_API IFPUGInteractExecutorInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
+	//Returns component which will be used for a trace
 	virtual USceneComponent* GetComponentForInteractTrace() const = 0;
 
+	//Handles interact on executor side using Interact Type
 	virtual void HandleInteractAction(EInteractActionType Type) = 0;
 };

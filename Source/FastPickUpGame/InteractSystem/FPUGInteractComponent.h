@@ -16,11 +16,8 @@ public:
 	// Sets default values for this component's properties
 	UFPUGInteractComponent();
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+	// --- New functions
 
-public:
 	void Interact();
 
 	void CosmeticTrace();
@@ -29,10 +26,14 @@ private:
 
 	void InteractInternal();
 
+	static void ToggleInteractComponentVisuals(UPrimitiveComponent* InteractComponent, const bool bShouldSwitchOn);
+
+	USceneComponent* GetExecutorTraceComponent();
+
+	FHitResult TraceForInteract();
+
 	UFUNCTION(Server, Reliable)
 	void ServerInteract();
-
-	void ToggleIntectComponentVisuals(UPrimitiveComponent* InteractComponent, const bool bShouldSwitchOn) const;
 
 protected: 
 
@@ -41,12 +42,10 @@ protected:
 
 private:
 
+	UPROPERTY()
 	USceneComponent* ExecutorTraceComponent;
 
-	USceneComponent* GetExecutorTraceComponent();
-
-	FHitResult TraceForInteract();
-
+	UPROPERTY()
 	UPrimitiveComponent* ComponentToInteractWith;
 		
 };

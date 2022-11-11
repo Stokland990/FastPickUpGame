@@ -23,8 +23,6 @@ class FASTPICKUPGAME_API IFPUGPickUpInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	//virtual void PickUpScoreItem(const int32 ScoreToAdd) = 0;
-
 	virtual void SetItemIdToCollect(const int32 NewId) = 0;
 
 	virtual int32 GetItemIdToCollect() const = 0;

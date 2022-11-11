@@ -15,19 +15,19 @@ AFPUGItemSpawnPoint::AFPUGItemSpawnPoint()
 
 }
 
-// Called when the game starts or when spawned
+//Initialize spawn point in GameMode
 void AFPUGItemSpawnPoint::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	auto World = GetWorld();
+	const auto World = GetWorld();
 
 	if (!World)
 	{
 		return;
 	}
 
-	auto GM = Cast<AFPUGGameModeBase>(World->GetAuthGameMode());
+	const auto GM = Cast<AFPUGGameModeBase>(World->GetAuthGameMode());
 
 	if (GM)
 	{

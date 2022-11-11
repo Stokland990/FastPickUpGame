@@ -13,19 +13,13 @@
 #include "Net/UnrealNetwork.h"
 
 #include "FastPickUpGame/InteractSystem/FPUGInteractComponent.h"
-#include <FastPickUpGame/GameplaySystem/FPUGGameModeBase.h>
+#include "FastPickUpGame/GameplaySystem/FPUGGameModeBase.h"
 
-
-//////////////////////////////////////////////////////////////////////////
-// FPUGCharacterBase
 
 AFPUGCharacterBase::AFPUGCharacterBase()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	// set our turn rate for input
-	TurnRateGamepad = 50.f;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -56,9 +50,6 @@ AFPUGCharacterBase::AFPUGCharacterBase()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	InteractComponent = CreateDefaultSubobject<UFPUGInteractComponent>(TEXT("InteractComponent"));
-
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
 void AFPUGCharacterBase::Tick(float DeltaTime)
@@ -70,9 +61,6 @@ void AFPUGCharacterBase::Tick(float DeltaTime)
 		InteractComponent->CosmeticTrace();
 	}
 }
-
-//////////////////////////////////////////////////////////////////////////
-// Input
 
 void AFPUGCharacterBase::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -90,13 +78,7 @@ void AFPUGCharacterBase::SetupPlayerInputComponent(class UInputComponent* Player
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
 	PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &AFPUGCharacterBase::TurnAtRate);
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AFPUGCharacterBase::LookUpAtRate);
-
-	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AFPUGCharacterBase::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AFPUGCharacterBase::TouchStopped);
 }
 
 void AFPUGCharacterBase::PlayerInteract()
@@ -105,33 +87,6 @@ void AFPUGCharacterBase::PlayerInteract()
 	{
 		InteractComponent->Interact();
 	}
-}
-
-void AFPUGCharacterBase::OnRep_ItemIdItemIdToCollect()
-{
-	OnItemIdUpdated.Broadcast(ItemIdToCollect);
-}
-
-void AFPUGCharacterBase::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	Jump();
-}
-
-void AFPUGCharacterBase::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	StopJumping();
-}
-
-void AFPUGCharacterBase::TurnAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
-}
-
-void AFPUGCharacterBase::LookUpAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
 }
 
 void AFPUGCharacterBase::MoveForward(float Value)
@@ -168,9 +123,14 @@ int32 AFPUGCharacterBase::GetItemIdToCollectInternal() const
 	return ItemIdToCollect;
 }
 
+void AFPUGCharacterBase::OnRep_ItemIdItemIdToCollect()
+{
+	OnItemIdUpdated.Broadcast(ItemIdToCollect);
+}
+
 void AFPUGCharacterBase::PickUpScoreItem()
 {
-	auto GM = GetWorld()->GetAuthGameMode<AFPUGGameModeBase>();
+	const auto GM = GetWorld()->GetAuthGameMode<AFPUGGameModeBase>();
 
 	if (GM)
 	{
@@ -180,6 +140,7 @@ void AFPUGCharacterBase::PickUpScoreItem()
 	}
 }
 
+//Deciding what to do with interact information
 void AFPUGCharacterBase::HandleInteractAction(EInteractActionType Type)
 {
 	switch (Type)
@@ -189,11 +150,13 @@ void AFPUGCharacterBase::HandleInteractAction(EInteractActionType Type)
 		PickUpScoreItem();
 
 		break;
+
 	default:
 		break;
 	}
 }
 
+//Get component from which interact trace will be made.
 USceneComponent* AFPUGCharacterBase::GetComponentForInteractTrace() const
 {
 	return FollowCamera;
@@ -201,6 +164,8 @@ USceneComponent* AFPUGCharacterBase::GetComponentForInteractTrace() const
 
 void AFPUGCharacterBase::SetItemIdToCollect(const int32 NewId)
 {
+	MARK_PROPERTY_DIRTY_FROM_NAME(AFPUGCharacterBase, ItemIdToCollect, this);
+
 	ItemIdToCollect = NewId;
 }
 
@@ -213,5 +178,9 @@ void AFPUGCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(AFPUGCharacterBase, ItemIdToCollect, COND_OwnerOnly);
+	FDoRepLifetimeParams SharedParams;
+	SharedParams.bIsPushBased = true;
+	SharedParams.Condition = COND_None;
+
+	DOREPLIFETIME_WITH_PARAMS_FAST(AFPUGCharacterBase, ItemIdToCollect, SharedParams);
 }

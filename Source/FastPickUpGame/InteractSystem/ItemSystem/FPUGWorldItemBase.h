@@ -26,7 +26,8 @@ public:
 
 public:
 
-	void InitAppearence(UStaticMesh* Mesh, UMaterialInstance* Material);
+	//Setup mesh and material
+	void InitAppearance(UStaticMesh* Mesh, UMaterialInstance* Material) const;
 
 	void SetItemID(int32 NewId);
 
@@ -35,7 +36,7 @@ public:
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	 void BeginPlay() override;
 
 
 public:

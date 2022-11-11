@@ -23,14 +23,14 @@ public:
 
 	int32 GetTimeRemain() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Time")
-	void InitTimeRemain();
-
 	void SetTimeRemain(const int32 NewTime);
 
 	void SetWinnerId(const int32 WinnerId);
 
 	UDataTable* GetItemsDT();
+
+	UFUNCTION(BlueprintCallable, Category = "Time")
+	void InitTimeRemain();
 
 	UFUNCTION()
 	void OnRep_TeamScores();
