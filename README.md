@@ -12,5 +12,5 @@ The rules are simple. You have to collect more of the needed items (you can see 
 If you want to test out just the build of the game you can download it here: 
 https://drive.google.com/file/d/1S1P4-9mOCRiDX4H82QUnpqDuznymjCUg/view?usp=share_link
 
-#LinkedIn
+# LinkedIn
 My linkedIn page is: https://www.linkedin.com/in/maksim-shekoian-3906b3253/
