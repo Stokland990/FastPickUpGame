@@ -49,9 +49,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnInitTime OnInitTime;
 
-
 protected:
 
+	//Player Scores Info. 0 index - first player, 1 index - second
 	UPROPERTY(ReplicatedUsing = "OnRep_TeamScores", BlueprintReadOnly, Category = "Score")
 	TArray<int32> TeamScores;
 
@@ -61,6 +61,7 @@ protected:
 	UPROPERTY(ReplicatedUsing = "OnRep_TimeRemain", BlueprintReadOnly, Category = "Time")
 	int32 TimeRemain = -1;
 
+	//Data table that contains info about Items.
 	UPROPERTY(EditDefaultsOnly, Category = "Items")
 	UDataTable* ItemsDT;
 

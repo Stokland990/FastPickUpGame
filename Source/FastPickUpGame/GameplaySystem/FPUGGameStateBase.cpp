@@ -20,6 +20,7 @@ int32 AFPUGGameStateBase::GetTimeRemain() const
 	return TimeRemain;
 }
 
+//This is called just once on the start of a match. Starts timer on client side.
 void AFPUGGameStateBase::InitTimeRemain()
 {
 	MARK_PROPERTY_DIRTY_FROM_NAME(AFPUGGameStateBase, TimeRemain, this);
@@ -62,8 +63,6 @@ void AFPUGGameStateBase::OnRep_WinnerPlayerId()
 {
 	for (const auto CurrentPS : PlayerArray)
 	{
-		const int32 CurrentPlayerId = CurrentPS->GetPlayerId();
-
 		const auto PC = CurrentPS->GetPlayerController();
 
 		if(!PC)
@@ -84,8 +83,6 @@ void AFPUGGameStateBase::OnRep_WinnerPlayerId()
 
 void AFPUGGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-
-
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	FDoRepLifetimeParams SharedParams;
@@ -93,8 +90,6 @@ void AFPUGGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	SharedParams.Condition = COND_None;
 
 	DOREPLIFETIME(AFPUGGameStateBase, TeamScores);
-
-	//DOREPLIFETIME_CONDITION(AFPUGGameStateBase, TimeRemain, COND_InitialOnly);
 
 	DOREPLIFETIME_WITH_PARAMS_FAST(AFPUGGameStateBase, TimeRemain, SharedParams);
 	DOREPLIFETIME_WITH_PARAMS_FAST(AFPUGGameStateBase, WinnerPlayerId, SharedParams);
