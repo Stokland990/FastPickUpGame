@@ -211,7 +211,7 @@ void AFPUGGameModeBase::SpawnItems()
 
 			SpawnedItem->OnRep_ItemID();
 
-			SpawnPoints.RemoveAt(RandomIndex, 1, true);
+			SpawnPoints.RemoveAt(RandomIndex, 1, EAllowShrinking::Yes);
 
 			//If no more spawn points - end spawn 
 			if (SpawnPoints.Num() == 0)

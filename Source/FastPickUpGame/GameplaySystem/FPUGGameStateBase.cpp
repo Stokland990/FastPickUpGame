@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerState.h"
 
 #include "FastPickUpGame/GameplaySystem/PlayerControlSystem/FPUGHUDInterface.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 
 TArray<int32>& AFPUGGameStateBase::GetScoreInfo()

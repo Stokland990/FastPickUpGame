@@ -14,6 +14,7 @@
 
 #include "FastPickUpGame/InteractSystem/FPUGInteractComponent.h"
 #include "FastPickUpGame/GameplaySystem/FPUGGameModeBase.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 
 AFPUGCharacterBase::AFPUGCharacterBase()

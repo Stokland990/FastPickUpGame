@@ -4,6 +4,7 @@
 #include "FPUGDoorBase.h"
 
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 // Sets default values
 AFPUGDoorBase::AFPUGDoorBase()

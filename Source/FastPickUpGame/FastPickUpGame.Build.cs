@@ -4,10 +4,23 @@ using UnrealBuildTool;
 
 public class FastPickUpGame : ModuleRules
 {
-	public FastPickUpGame(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+    public FastPickUpGame(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        
+        // bLegacyPublicIncludePaths = true;  
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "NetCore" });
-   }
+        PublicDependencyModuleNames.AddRange(new[]
+        {
+            "Core",
+            "CoreUObject",
+            "Engine",
+            "InputCore",
+            "EnhancedInput",
+            "HeadMountedDisplay",
+            "NetCore"
+        });
+
+        // PrivateDependencyModuleNames.AddRange(new[] { "Slate", "SlateCore" });
+    }
 }
